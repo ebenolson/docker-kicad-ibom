@@ -56,7 +56,7 @@ class SettingsDialogPanel ( wx.Panel ):
         self.m_button42.SetDefault()
         bSizer39.Add( self.m_button42, 0, wx.ALL, 5 )
         
-        self.m_button43 = wx.Button( self, wx.ID_ANY, u"Cancel", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
+        self.m_button43 = wx.Button( self, wx.ID_CANCEL, u"Cancel", wx.DefaultPosition, wx.DefaultSize, 0|wx.BORDER_DEFAULT )
         bSizer39.Add( self.m_button43, 0, wx.ALL, 5 )
         
         
@@ -99,6 +99,13 @@ class HtmlSettingsPanelBase ( wx.Panel ):
         
         self.darkModeCheckbox = wx.CheckBox( self, wx.ID_ANY, u"Dark mode", wx.DefaultPosition, wx.DefaultSize, 0 )
         b_sizer.Add( self.darkModeCheckbox, 0, wx.ALL, 5 )
+        
+        self.showPadsCheckbox = wx.CheckBox( self, wx.ID_ANY, u"Show footprint pads", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.showPadsCheckbox.SetValue(True) 
+        b_sizer.Add( self.showPadsCheckbox, 0, wx.ALL, 5 )
+        
+        self.showFabricationCheckbox = wx.CheckBox( self, wx.ID_ANY, u"Show fabrication layer", wx.DefaultPosition, wx.DefaultSize, 0 )
+        b_sizer.Add( self.showFabricationCheckbox, 0, wx.ALL, 5 )
         
         self.showSilkscreenCheckbox = wx.CheckBox( self, wx.ID_ANY, u"Show silkscreen", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.showSilkscreenCheckbox.SetValue(True) 
@@ -190,13 +197,53 @@ class GeneralSettingsPanelBase ( wx.Panel ):
         
         bSizer32 = wx.BoxSizer( wx.VERTICAL )
         
-        sbSizer6 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Bom destination directory" ), wx.VERTICAL )
+        sbSizer6 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Bom destination" ), wx.VERTICAL )
+        
+        fgSizer1 = wx.FlexGridSizer( 0, 2, 0, 0 )
+        fgSizer1.AddGrowableCol( 1 )
+        fgSizer1.SetFlexibleDirection( wx.BOTH )
+        fgSizer1.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+        
+        self.m_staticText8 = wx.StaticText( sbSizer6.GetStaticBox(), wx.ID_ANY, u"Directory", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_staticText8.Wrap( -1 )
+        
+        fgSizer1.Add( self.m_staticText8, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
         
         self.bomDirPicker = wx.DirPickerCtrl( sbSizer6.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"Select bom folder", wx.DefaultPosition, wx.DefaultSize, wx.DIRP_SMALL|wx.DIRP_USE_TEXTCTRL|wx.BORDER_SIMPLE )
-        sbSizer6.Add( self.bomDirPicker, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+        fgSizer1.Add( self.bomDirPicker, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
+        
+        self.m_staticText9 = wx.StaticText( sbSizer6.GetStaticBox(), wx.ID_ANY, u"Name format", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_staticText9.Wrap( -1 )
+        
+        fgSizer1.Add( self.m_staticText9, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+        
+        bSizer20 = wx.BoxSizer( wx.HORIZONTAL )
+        
+        self.fileNameFormatTextControl = wx.TextCtrl( sbSizer6.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer20.Add( self.fileNameFormatTextControl, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
+        
+        self.m_button12 = wx.Button( sbSizer6.GetStaticBox(), wx.ID_ANY, u"?", wx.DefaultPosition, wx.DefaultSize, wx.BU_EXACTFIT )
+        bSizer20.Add( self.m_button12, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 4 )
+        
+        
+        fgSizer1.Add( bSizer20, 1, wx.EXPAND, 5 )
+        
+        
+        sbSizer6.Add( fgSizer1, 1, wx.EXPAND, 5 )
         
         
         bSizer32.Add( sbSizer6, 0, wx.ALL|wx.EXPAND, 5 )
+        
+        sbSizer9 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Additional pcb data" ), wx.HORIZONTAL )
+        
+        self.includeTracksCheckbox = wx.CheckBox( sbSizer9.GetStaticBox(), wx.ID_ANY, u"Include tracks/zones", wx.DefaultPosition, wx.DefaultSize, 0 )
+        sbSizer9.Add( self.includeTracksCheckbox, 1, wx.ALL, 5 )
+        
+        self.includeNetsCheckbox = wx.CheckBox( sbSizer9.GetStaticBox(), wx.ID_ANY, u"Include nets", wx.DefaultPosition, wx.DefaultSize, 0 )
+        sbSizer9.Add( self.includeNetsCheckbox, 1, wx.ALL, 5 )
+        
+        
+        bSizer32.Add( sbSizer9, 0, wx.ALL|wx.EXPAND, 5 )
         
         sortingSizer = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Component sort order" ), wx.VERTICAL )
         
@@ -270,6 +317,9 @@ class GeneralSettingsPanelBase ( wx.Panel ):
         self.blacklistVirtualCheckbox.SetValue(True) 
         blacklistSizer.Add( self.blacklistVirtualCheckbox, 0, wx.ALL, 5 )
         
+        self.blacklistEmptyValCheckbox = wx.CheckBox( blacklistSizer.GetStaticBox(), wx.ID_ANY, u"Blacklist components with empty value", wx.DefaultPosition, wx.DefaultSize, 0 )
+        blacklistSizer.Add( self.blacklistEmptyValCheckbox, 0, wx.ALL, 5 )
+        
         
         bSizer32.Add( blacklistSizer, 1, wx.ALL|wx.EXPAND|wx.TOP, 5 )
         
@@ -279,6 +329,8 @@ class GeneralSettingsPanelBase ( wx.Panel ):
         bSizer32.Fit( self )
         
         # Connect Events
+        self.Bind( wx.EVT_SIZE, self.OnSize )
+        self.m_button12.Bind( wx.EVT_BUTTON, self.OnNameFormatHintClick )
         self.m_button1.Bind( wx.EVT_BUTTON, self.OnComponentSortOrderUp )
         self.m_button2.Bind( wx.EVT_BUTTON, self.OnComponentSortOrderDown )
         self.m_button3.Bind( wx.EVT_BUTTON, self.OnComponentSortOrderAdd )
@@ -291,6 +343,12 @@ class GeneralSettingsPanelBase ( wx.Panel ):
     
     
     # Virtual event handlers, overide them in your derived class
+    def OnSize( self, event ):
+        event.Skip()
+    
+    def OnNameFormatHintClick( self, event ):
+        event.Skip()
+    
     def OnComponentSortOrderUp( self, event ):
         event.Skip()
     
@@ -355,6 +413,9 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         
         
         extraFieldsSizer.Add( bSizer4, 1, wx.EXPAND, 5 )
+        
+        self.normalizeCaseCheckbox = wx.CheckBox( extraFieldsSizer.GetStaticBox(), wx.ID_ANY, u"Normalize field name case", wx.DefaultPosition, wx.DefaultSize, 0 )
+        extraFieldsSizer.Add( self.normalizeCaseCheckbox, 0, wx.ALL|wx.EXPAND, 5 )
         
         
         bSizer42.Add( extraFieldsSizer, 2, wx.ALL|wx.EXPAND, 5 )
@@ -426,16 +487,21 @@ class ExtraFieldsPanelBase ( wx.Panel ):
         bSizer42.Fit( self )
         
         # Connect Events
+        self.Bind( wx.EVT_SIZE, self.OnSize )
         self.netlistFilePicker.Bind( wx.EVT_FILEPICKER_CHANGED, self.OnNetlistFileChanged )
         self.m_button1.Bind( wx.EVT_BUTTON, self.OnExtraFieldsUp )
         self.m_button2.Bind( wx.EVT_BUTTON, self.OnExtraFieldsDown )
-        self.boardVariantFieldBox.Bind( wx.EVT_TEXT, self.OnBoardVariantFieldChange )
+        self.normalizeCaseCheckbox.Bind( wx.EVT_CHECKBOX, self.OnNetlistFileChanged )
+        self.boardVariantFieldBox.Bind( wx.EVT_COMBOBOX, self.OnBoardVariantFieldChange )
     
     def __del__( self ):
         pass
     
     
     # Virtual event handlers, overide them in your derived class
+    def OnSize( self, event ):
+        event.Skip()
+    
     def OnNetlistFileChanged( self, event ):
         event.Skip()
     
@@ -444,6 +510,7 @@ class ExtraFieldsPanelBase ( wx.Panel ):
     
     def OnExtraFieldsDown( self, event ):
         event.Skip()
+    
     
     def OnBoardVariantFieldChange( self, event ):
         event.Skip()

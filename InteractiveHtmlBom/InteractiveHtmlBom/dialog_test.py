@@ -3,9 +3,9 @@ from dialog.settings_dialog import *
 
 class MyApp(wx.App):
     def OnInit(self):
-        frame = SettingsDialog(None, lambda x: None)
+        frame = SettingsDialog(lambda: None, lambda x: None, "Hi")
         if frame.ShowModal() == wx.ID_OK:
-            print "Should generate bom"
+            print("Should generate bom")
         frame.Destroy()
         return True
 

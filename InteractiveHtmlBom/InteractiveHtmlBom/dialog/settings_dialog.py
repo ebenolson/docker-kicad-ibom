@@ -4,7 +4,7 @@ import re
 
 import wx
 
-import dialog_base
+from . import dialog_base
 
 
 def pop_error(msg):
@@ -12,10 +12,11 @@ def pop_error(msg):
 
 
 class SettingsDialog(dialog_base.SettingsDialogBase):
-    def __init__(self, extra_data_func, config_save_func):
+    def __init__(self, extra_data_func, config_save_func,
+                 file_name_format_hint):
         dialog_base.SettingsDialogBase.__init__(self, None)
         self.panel = SettingsDialogPanel(
-                self, extra_data_func, config_save_func)
+                self, extra_data_func, config_save_func, file_name_format_hint)
         best_size = self.panel.BestSize
         # hack for some gtk themes that incorrectly calculate best size
         best_size.IncBy(dx=0, dy=30)
@@ -24,7 +25,12 @@ class SettingsDialog(dialog_base.SettingsDialogBase):
     # hack for new wxFormBuilder generating code incompatible with old wxPython
     # noinspection PyMethodOverriding
     def SetSizeHints(self, sz1, sz2):
-        self.SetSizeHintsSz(sz1, sz2)
+        try:
+            # wxPython 3
+            self.SetSizeHintsSz(sz1, sz2)
+        except TypeError:
+            # wxPython 4
+            super(SettingsDialog, self).SetSizeHints(sz1, sz2)
 
     def set_extra_data_path(self, extra_data_file):
         self.panel.extra.netlistFilePicker.Path = extra_data_file
@@ -33,10 +39,12 @@ class SettingsDialog(dialog_base.SettingsDialogBase):
 
 # Implementing settings_dialog
 class SettingsDialogPanel(dialog_base.SettingsDialogPanel):
-    def __init__(self, parent, extra_data_func, config_save_func):
+    def __init__(self, parent, extra_data_func, config_save_func,
+                 file_name_format_hint):
         self.config_save_func = config_save_func
         dialog_base.SettingsDialogPanel.__init__(self, parent)
-        self.general = GeneralSettingsPanel(self.notebook)
+        self.general = GeneralSettingsPanel(self.notebook,
+                                            file_name_format_hint)
         self.html = HtmlSettingsPanel(self.notebook)
         self.extra = ExtraFieldsPanel(self.notebook, extra_data_func)
         self.notebook.AddPage(self.general, "General")
@@ -69,8 +77,10 @@ class HtmlSettingsPanel(dialog_base.HtmlSettingsPanelBase):
 
 # Implementing GeneralSettingsPanelBase
 class GeneralSettingsPanel(dialog_base.GeneralSettingsPanelBase):
-    def __init__(self, parent):
+
+    def __init__(self, parent, file_name_format_hint):
         dialog_base.GeneralSettingsPanelBase.__init__(self, parent)
+        self.file_name_format_hint = file_name_format_hint
 
     # Handlers for GeneralSettingsPanelBase events.
     def OnComponentSortOrderUp(self, event):
@@ -138,6 +148,17 @@ class GeneralSettingsPanel(dialog_base.GeneralSettingsPanelBase):
             if self.blacklistBox.Count > 0:
                 self.blacklistBox.SetSelection(max(selection - 1, 0))
 
+    def OnNameFormatHintClick(self, event):
+        wx.MessageBox(self.file_name_format_hint, 'File name format help',
+                      style=wx.ICON_NONE | wx.OK)
+
+    def OnSize(self, event):
+        # Trick the listCheckBox best size calculations
+        tmp = self.componentSortOrderBox.GetStrings()
+        self.componentSortOrderBox.SetItems([])
+        self.Layout()
+        self.componentSortOrderBox.SetItems(tmp)
+
 
 # Implementing ExtraFieldsPanelBase
 class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
@@ -176,7 +197,8 @@ class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
         netlist_file = self.netlistFilePicker.Path
         if not os.path.isfile(netlist_file):
             return
-        self.extra_field_data = self.extra_data_func(netlist_file)
+        self.extra_field_data = self.extra_data_func(
+                netlist_file, self.normalizeCaseCheckbox.Value)
         if self.extra_field_data is not None:
             field_list = list(self.extra_field_data[0])
             self.extraFieldsList.SetItems(field_list)
@@ -201,3 +223,10 @@ class ExtraFieldsPanel(dialog_base.ExtraFieldsPanelBase):
                 variant_set.add(field_dict[selection])
         self.boardVariantWhitelist.SetItems(list(variant_set))
         self.boardVariantBlacklist.SetItems(list(variant_set))
+
+    def OnSize(self, event):
+        # Trick the listCheckBox best size calculations
+        tmp = self.extraFieldsList.GetStrings()
+        self.extraFieldsList.SetItems([])
+        self.Layout()
+        self.extraFieldsList.SetItems(tmp)
