@@ -6,6 +6,7 @@ import sys
 
 import wx
 
+sys.path.insert(1, '/usr/lib/kicad-nightly/lib/python3/dist-packages/')
 
 # python 2 and 3 compatibility hack
 def to_utf(s):
